@@ -114,7 +114,7 @@ public class FlinkResultSet implements ResultSet {
 			return;
 		}
 
-		if (jobIdOrResultSet.isLeft()) {
+		if (jobIdOrResultSet.isLeft() && rowData.hasMoreResponse()) {
 			// no need to lock, closing while fetching new results should throw exception
 			session.cancelJob(jobIdOrResultSet.left());
 		}
@@ -1393,6 +1393,10 @@ public class FlinkResultSet implements ResultSet {
 			boolean ret = rowCount == Long.MAX_VALUE;
 			lock.readLock().unlock();
 			return ret;
+		}
+
+		boolean hasMoreResponse() {
+			return hasMoreResponse;
 		}
 
 		Row getCurrentRow() {
