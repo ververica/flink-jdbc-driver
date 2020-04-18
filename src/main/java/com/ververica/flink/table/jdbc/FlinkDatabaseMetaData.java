@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -87,8 +88,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public String getURL() throws SQLException {
-		return FlinkDriver.URL_PREFIX + session.getServerHost() + ":" + session.getServerPort() +
+		String url =  FlinkDriver.URL_PREFIX + session.getServerHost() + ":" + session.getServerPort() +
 			"?planner=" + session.getPlanner();
+		for (Map.Entry<String, String> entry: session.getProperties().entrySet()) {
+			url += "&" + entry.getKey() + "=" + entry.getValue();
+		}
+		return url;
 	}
 
 	@Override

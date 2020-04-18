@@ -46,7 +46,7 @@ import org.apache.flink.runtime.util.ExecutorThreadFactory;
 import org.apache.flink.util.ExecutorUtils;
 
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,6 +61,7 @@ public class SessionClient {
 	private final String sessionName;
 	private final String planner;
 	private final String executionType;
+	private final Map<String, String> properties;
 	private final RestClient restClient;
 
 	private final ExecutorService executor;
@@ -73,6 +74,7 @@ public class SessionClient {
 		String sessionName,
 		String planner,
 		String executionType,
+		Map<String, String> properties,
 		String threadName)
 		throws Exception {
 		this.serverHost = serverHost;
@@ -80,6 +82,7 @@ public class SessionClient {
 		this.sessionName = sessionName;
 		this.planner = planner;
 		this.executionType = executionType;
+		this.properties = properties;
 		this.executor = Executors.newFixedThreadPool(4, new ExecutorThreadFactory(threadName));
 		this.restClient = new RestClient(RestClientConfiguration.fromConfiguration(new Configuration()), executor);
 
@@ -98,13 +101,17 @@ public class SessionClient {
 		return planner;
 	}
 
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
 	private void connectInternal() throws Exception {
 		this.sessionId = restClient.sendRequest(
 			serverHost,
 			serverPort,
 			SessionCreateHeaders.getInstance(),
 			EmptyMessageParameters.getInstance(),
-			new SessionCreateRequestBody(sessionName, planner, executionType, Collections.emptyMap()))
+			new SessionCreateRequestBody(sessionName, planner, executionType, properties))
 			.get().getSessionId();
 	}
 
