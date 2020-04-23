@@ -20,13 +20,15 @@ package com.ververica.flink.table.jdbc.resulthandler;
 
 import com.ververica.flink.table.gateway.rest.result.ResultSet;
 
+import java.sql.SQLException;
+
 /**
  * A result handler that directly forwards the {@link ResultSet} produced by the REST API.
  */
 public class DefaultResultHandler implements ResultHandler {
 
 	@Override
-	public ResultSet handleResult(ResultSet raw) {
+	public ResultSet handleResult(ResultSet raw) throws SQLException {
 		return raw;
 	}
 }

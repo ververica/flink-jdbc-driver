@@ -18,6 +18,8 @@
 
 package com.ververica.flink.table.jdbc.resulthandler;
 
+import com.ververica.flink.table.jdbc.FlinkJdbcUtils;
+
 /**
  * Factory to create {@link ResultHandler}s.
  */
@@ -30,6 +32,8 @@ public class ResultHandlerFactory {
 	public static ResultHandler getResultHandlerByStatementType(String statementType) {
 		if ("DESCRIBE".equals(statementType)) {
 			return new DescribeResultHandler();
+		} else if (FlinkJdbcUtils.DDL_COMMANDS.contains(statementType)) {
+			return new DdlResultHandler();
 		} else {
 			return getDefaultResultHandler();
 		}

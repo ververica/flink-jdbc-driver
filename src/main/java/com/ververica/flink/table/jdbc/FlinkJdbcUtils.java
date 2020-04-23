@@ -18,12 +18,40 @@
 
 package com.ververica.flink.table.jdbc;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
  * Util class for Flink JDBC.
  */
 public class FlinkJdbcUtils {
+
+	public static final List<String> QUERY_COMMANDS = Arrays.asList(
+		"SELECT",
+		"SHOW_MODULES",
+		"SHOW_CATALOGS",
+		"SHOW_CURRENT_CATALOG",
+		"SHOW_DATABASES",
+		"SHOW_CURRENT_DATABASE",
+		"SHOW_TABLES",
+		"SHOW_FUNCTIONS",
+		"DESCRIBE",
+		"EXPLAIN");
+
+	public static final List<String> DDL_COMMANDS = Arrays.asList(
+		"CREATE_VIEW",
+		"DROP_VIEW",
+		"CREATE_TABLE",
+		"DROP_TABLE",
+		"ALTER_TABLE",
+		"CREATE_DATABASE",
+		"DROP_DATABASE",
+		"ALTER_DATABASE",
+		"SET",
+		"RESET",
+		"USE_CATALOG",
+		"USE");
 
 	public static Pattern sqlPatternToJavaPattern(String sqlPattern) {
 		return Pattern.compile(sqlPattern

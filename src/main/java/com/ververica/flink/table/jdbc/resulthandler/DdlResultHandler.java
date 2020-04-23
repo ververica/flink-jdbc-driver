@@ -22,74 +22,44 @@ import com.ververica.flink.table.gateway.rest.result.ColumnInfo;
 import com.ververica.flink.table.gateway.rest.result.ConstantNames;
 import com.ververica.flink.table.gateway.rest.result.ResultKind;
 import com.ververica.flink.table.gateway.rest.result.ResultSet;
-import com.ververica.flink.table.gateway.rest.result.TableSchemaUtil;
 
-import org.apache.flink.table.api.TableColumn;
-import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.types.logical.BooleanType;
-import org.apache.flink.table.types.logical.LogicalType;
+import org.apache.flink.table.types.logical.IntType;
 import org.apache.flink.table.types.logical.VarCharType;
 import org.apache.flink.types.Row;
 import org.apache.flink.util.Preconditions;
 
-import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * A result handler that change the {@link ResultSet} produced by the describe statement of REST API
  * to a form that can be printed to screen.
  */
-public class DescribeResultHandler implements ResultHandler {
+public class DdlResultHandler implements ResultHandler {
 
 	@Override
 	public ResultSet handleResult(ResultSet raw) throws SQLException {
 		List<ColumnInfo> rawColumnInfos = raw.getColumns();
 		Preconditions.checkArgument(
 			rawColumnInfos.size() == 1 &&
-				rawColumnInfos.get(0).getName().equals(ConstantNames.SCHEMA) &&
+				rawColumnInfos.get(0).getName().equals(ConstantNames.RESULT) &&
 				rawColumnInfos.get(0).getLogicalType() instanceof VarCharType,
-			"Invalid DESCRIBE result schema. This is a bug.");
+			"Invalid DDL result set. This is a bug.");
 		Preconditions.checkArgument(
 			raw.getData().size() == 1,
-			"DESCRIBE result should contain exactly 1 json string record. This is a bug.");
-
-		List<ColumnInfo> newColumnInfos = Arrays.asList(
-			new ColumnInfo("column_name", rawColumnInfos.get(0).getType()),
-			new ColumnInfo("column_type", rawColumnInfos.get(0).getType()),
-			ColumnInfo.create("nullable", new BooleanType(false)),
-			ColumnInfo.create("primary_key", new BooleanType(false)));
+			"DDL result should contain exactly 1 string record. This is a bug.");
 
 		Row rawRow = raw.getData().get(0);
-		String json = rawRow.getField(0).toString();
-		TableSchema schema;
-		try {
-			schema = TableSchemaUtil.readTableSchemaFromJson(json);
-		} catch (JsonProcessingException e) {
-			throw new SQLException("Failed to parse json to table schema", e);
-		}
-		List<String> primaryKeys;
-		if (schema.getPrimaryKey().isPresent()) {
-			primaryKeys = schema.getPrimaryKey().get().getColumns();
-		} else {
-			primaryKeys = Collections.emptyList();
-		}
-
-		List<Row> newRows = new ArrayList<>();
-		for (TableColumn column : schema.getTableColumns()) {
-			String name = column.getName();
-			LogicalType type = column.getType().getLogicalType();
-			newRows.add(Row.of(name, type.toString(), type.isNullable(), primaryKeys.contains(name)));
-		}
+		String str = rawRow.getField(0).toString();
+		Preconditions.checkArgument(
+			ConstantNames.OK.equals(str),
+			"DDL result must be " + ConstantNames.OK + ". This is a bug.");
 
 		return ResultSet.builder()
 			.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
-			.columns(newColumnInfos)
-			.data(newRows)
+			.columns(ColumnInfo.create(ConstantNames.AFFECTED_ROW_COUNT, new IntType(false)))
+			// according to JDBC Java doc DDL's update count is 0
+			.data(Row.of(0))
 			.build();
 	}
 }
