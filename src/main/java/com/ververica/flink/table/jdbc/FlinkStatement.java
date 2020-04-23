@@ -33,8 +33,6 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -43,18 +41,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Flink JDBC statement.
  */
 public class FlinkStatement implements Statement {
-
-	private static final List<String> QUERY_COMMANDS = Arrays.asList(
-		"SELECT",
-		"SHOW_MODULES",
-		"SHOW_CATALOGS",
-		"SHOW_CURRENT_CATALOG",
-		"SHOW_DATABASES",
-		"SHOW_CURRENT_DATABASE",
-		"SHOW_TABLES",
-		"SHOW_FUNCTIONS",
-		"DESCRIBE",
-		"EXPLAIN");
 
 	private final SessionClient session;
 	private final FlinkConnection connection;
@@ -523,7 +509,7 @@ public class FlinkStatement implements Statement {
 					maxRows,
 					FlinkStatement.this);
 				currentResultSet.setFetchSize(fetchSize);
-				isQuery = QUERY_COMMANDS.contains(response.getStatementTypes().get(0));
+				isQuery = FlinkJdbcUtils.QUERY_COMMANDS.contains(response.getStatementTypes().get(0));
 				return true;
 			} finally {
 				lock.writeLock().unlock();

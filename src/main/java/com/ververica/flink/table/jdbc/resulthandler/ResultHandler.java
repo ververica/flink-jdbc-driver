@@ -20,10 +20,12 @@ package com.ververica.flink.table.jdbc.resulthandler;
 
 import com.ververica.flink.table.gateway.rest.result.ResultSet;
 
+import java.sql.SQLException;
+
 /**
  * An interface which change {@link ResultSet}s directly returned by REST API to the form we want.
  */
 public interface ResultHandler {
 
-	ResultSet handleResult(ResultSet raw);
+	ResultSet handleResult(ResultSet raw) throws SQLException;
 }
