@@ -19,6 +19,7 @@
 package com.ververica.flink.table.jdbc;
 
 import com.ververica.flink.table.gateway.rest.message.StatementExecuteResponseBody;
+import com.ververica.flink.table.gateway.rest.result.ConstantNames;
 import com.ververica.flink.table.jdbc.rest.RestUtils;
 import com.ververica.flink.table.jdbc.rest.SessionClient;
 import com.ververica.flink.table.jdbc.resulthandler.ResultHandlerFactory;
@@ -52,6 +53,7 @@ public class FlinkStatement implements Statement {
 		"SHOW_DATABASES",
 		"SHOW_CURRENT_DATABASE",
 		"SHOW_TABLES",
+		"SHOW_VIEWS",
 		"SHOW_FUNCTIONS",
 		"DESCRIBE",
 		"EXPLAIN");
@@ -369,7 +371,12 @@ public class FlinkStatement implements Statement {
 				ResultSet rs = (ResultSet) ret;
 				if (rs.next()) {
 					try {
-						return rs.getLong(1);
+						if (rs.getString(1).equals(ConstantNames.OK)){
+							// if returns only OK
+							return 0;
+						} else {
+							return rs.getLong(1);
+						}
 					} catch (SQLException e) {
 						throw new SQLException("Current result is not an update count.");
 					}
