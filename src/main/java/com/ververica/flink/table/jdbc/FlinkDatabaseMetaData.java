@@ -1253,9 +1253,13 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 			List<TableResultData> candidates) throws SQLException {
 		connection.setCatalog(catalog);
 		connection.setSchema(database);
-		ResultSet result = getImmediateSingleSqlResultSet("SHOW TABLES");
-		while (result.next()) {
-			candidates.add(new TableResultData(catalog, database, result.getString(1), result.getString(2)));
+		ResultSet tables = getImmediateSingleSqlResultSet("SHOW TABLES");
+		while (tables.next()) {
+			candidates.add(new TableResultData(catalog, database, tables.getString(1), "TABLE"));
+		}
+		ResultSet views = getImmediateSingleSqlResultSet("SHOW VIEWS");
+		while (views.next()) {
+			candidates.add(new TableResultData(catalog, database, views.getString(1), "VIEW"));
 		}
 	}
 
