@@ -300,4 +300,22 @@ under the License.
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>mediav-releases</id>
+            <name>Releases Repository</name>
+            <url>https://maven.corp.mediav.com/nexus/content/repositories/releases</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <snapshotRepository>
+            <id>mediav-snapshots</id>
+            <name>Snapshots Repository</name>
+            <url>https://maven.corp.mediav.com/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </snapshotRepository>
+    </distributionManagement>
 </project>
