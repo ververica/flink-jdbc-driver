@@ -1,0 +1,12 @@
+test:
+  script:
+  - mvn clean test
+
+deploy:
+  stage: deploy
+  only:
+  - qihoo@big-data/flink-jdbc-driver
+  script:
+  - mvn clean deploy 
+
+
