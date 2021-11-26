@@ -20,6 +20,7 @@ package com.ververica.flink.table.jdbc.resulthandler;
 
 import com.ververica.flink.table.gateway.rest.result.ColumnInfo;
 import com.ververica.flink.table.gateway.rest.result.ConstantNames;
+import com.ververica.flink.table.gateway.rest.result.ResultKind;
 import com.ververica.flink.table.gateway.rest.result.ResultSet;
 import com.ververica.flink.table.gateway.rest.result.TableSchemaUtil;
 
@@ -84,6 +85,10 @@ public class DescribeResultHandler implements ResultHandler {
 			newRows.add(Row.of(name, type.toString(), type.isNullable(), primaryKeys.contains(name)));
 		}
 
-		return new ResultSet(newColumnInfos, newRows);
+		return ResultSet.builder()
+				.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+				.columns(newColumnInfos)
+				.data(newRows)
+				.build();
 	}
 }

@@ -21,6 +21,7 @@ package com.ververica.flink.table.jdbc;
 import com.ververica.flink.table.gateway.rest.message.GetInfoResponseBody;
 import com.ververica.flink.table.gateway.rest.message.StatementExecuteResponseBody;
 import com.ververica.flink.table.gateway.rest.result.ColumnInfo;
+import com.ververica.flink.table.gateway.rest.result.ResultKind;
 import com.ververica.flink.table.gateway.rest.result.TableSchemaUtil;
 import com.ververica.flink.table.jdbc.rest.RestUtils;
 import com.ververica.flink.table.jdbc.rest.SessionClient;
@@ -51,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -87,8 +89,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 
 	@Override
 	public String getURL() throws SQLException {
-		return FlinkDriver.URL_PREFIX + session.getServerHost() + ":" + session.getServerPort() +
+		String url =  FlinkDriver.URL_PREFIX + session.getServerHost() + ":" + session.getServerPort() +
 			"?planner=" + session.getPlanner();
+		for (Map.Entry<String, String> entry: session.getProperties().entrySet()) {
+			url += "&" + entry.getKey() + "=" + entry.getValue();
+		}
+		return url;
 	}
 
 	@Override
@@ -709,8 +715,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 
 		if ("".equals(catalog) || "".equals(schemaPattern)) {
 			// every Flink database belongs to a catalog and a database
-			return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-				new GetTableResultColumnInfos().getColumnInfos(), Collections.emptyList()));
+			return FlinkResultSet.of(
+					com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+							.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+							.columns(new GetTableResultColumnInfos().getColumnInfos())
+							.data(Collections.emptyList())
+							.build());
 		}
 
 		String oldCatalog = connection.getCatalog();
@@ -748,8 +758,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 				matches.add(columnInfos.process(candidate));
 			}
 		}
-		return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-			columnInfos.getColumnInfos(), matches));
+		return FlinkResultSet.of(
+				com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+						.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+						.columns(columnInfos.getColumnInfos())
+						.data(matches)
+						.build());
 	}
 
 	@Override
@@ -779,10 +793,13 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 			maxCatalogNameLength = Math.max(maxCatalogNameLength, name.length());
 		}
 
-		return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-			Collections.singletonList(
-				ColumnInfo.create(catalogColumn, new VarCharType(true, maxCatalogNameLength))),
-			rows));
+		return FlinkResultSet.of(
+				com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+						.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+						.columns(Collections.singletonList(
+								ColumnInfo.create(catalogColumn, new VarCharType(true, maxCatalogNameLength))))
+						.data(rows)
+						.build());
 	}
 
 	@Override
@@ -796,9 +813,13 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 			maxTypeNameLength = Math.max(maxTypeNameLength, type.length());
 		}
 
-		return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-			Collections.singletonList(ColumnInfo.create(tableTypeColumn, new VarCharType(false, maxTypeNameLength))),
-			rows));
+		return FlinkResultSet.of(
+				com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+						.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+						.columns(Collections.singletonList(
+								ColumnInfo.create(tableTypeColumn, new VarCharType(false, maxTypeNameLength))))
+						.data(rows)
+						.build());
 	}
 
 	@Override
@@ -844,8 +865,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 				matches.add(columnInfos.process(candidate));
 			}
 		}
-		return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-			columnInfos.getColumnInfos(), matches));
+		return FlinkResultSet.of(
+				com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+						.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+						.columns(columnInfos.getColumnInfos())
+						.data(matches)
+						.build());
 	}
 
 	@Override
@@ -886,12 +911,20 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 					matches.add(columnInfos.process(catalog, schema, table, column.getName(), pkIdx));
 				}
 			}
-			ret = FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-				columnInfos.getColumnInfos(), matches));
+			ret = FlinkResultSet.of(
+					com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+							.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+							.columns(columnInfos.getColumnInfos())
+							.data(matches)
+							.build());
 		} else {
 			// no primary keys
-			ret = FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-				columnInfos.getColumnInfos(), Collections.emptyList()));
+			ret = FlinkResultSet.of(
+					com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+							.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+							.columns(columnInfos.getColumnInfos())
+							.data(Collections.emptyList())
+							.build());
 		}
 
 		connection.setCatalog(oldCatalog);
@@ -1087,8 +1120,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 
 		if ("".equals(catalog)) {
 			// every Flink database belongs to a catalog
-			return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-				new GetSchemaColumnInfos().getColumnInfos(), Collections.emptyList()));
+			return FlinkResultSet.of(
+					com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+							.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+							.columns(new GetSchemaColumnInfos().getColumnInfos())
+							.data(Collections.emptyList())
+							.build());
 		}
 
 		List<SchemaResultData> candidates = new ArrayList<>();
@@ -1120,8 +1157,12 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 				matches.add(columnInfos.process(candidate));
 			}
 		}
-		return FlinkResultSet.of(new com.ververica.flink.table.gateway.rest.result.ResultSet(
-			columnInfos.getColumnInfos(), matches));
+		return FlinkResultSet.of(
+				com.ververica.flink.table.gateway.rest.result.ResultSet.builder()
+						.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
+						.columns(columnInfos.getColumnInfos())
+						.data(matches)
+						.build());
 	}
 
 	@Override
@@ -1212,9 +1253,13 @@ public class FlinkDatabaseMetaData implements DatabaseMetaData {
 			List<TableResultData> candidates) throws SQLException {
 		connection.setCatalog(catalog);
 		connection.setSchema(database);
-		ResultSet result = getImmediateSingleSqlResultSet("SHOW TABLES");
-		while (result.next()) {
-			candidates.add(new TableResultData(catalog, database, result.getString(1), result.getString(2)));
+		ResultSet tables = getImmediateSingleSqlResultSet("SHOW TABLES");
+		while (tables.next()) {
+			candidates.add(new TableResultData(catalog, database, tables.getString(1), "TABLE"));
+		}
+		ResultSet views = getImmediateSingleSqlResultSet("SHOW VIEWS");
+		while (views.next()) {
+			candidates.add(new TableResultData(catalog, database, views.getString(1), "VIEW"));
 		}
 	}
 
