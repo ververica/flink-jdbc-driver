@@ -29,7 +29,7 @@ under the License.
     <packaging>jar</packaging>
 
     <properties>
-        <flink.version>1.10.0</flink.version>
+        <flink.version>1.15.2</flink.version>
         <flink.sql.gateway.version>0.1-SNAPSHOT</flink.sql.gateway.version>
         <java.version>1.8</java.version>
         <slf4j.version>1.7.15</slf4j.version>
@@ -49,8 +49,8 @@ under the License.
              to avoid process kills due to container limits on TravisCI -->
         <flink.forkCountTestPackage>${flink.forkCount}</flink.forkCountTestPackage>
         <flink.reuseForks>true</flink.reuseForks>
-        <test.scheduler.type></test.scheduler.type>
-        <test.groups></test.groups>
+        <test.scheduler.type/>
+        <test.groups/>
     </properties>
 
     <dependencies>
@@ -241,7 +241,7 @@ under the License.
                         <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
                             <licenseFamilyCategory>AL2 </licenseFamilyCategory>
                             <licenseFamilyName>Apache License 2.0</licenseFamilyName>
-                            <notes />
+                            <notes/>
                             <patterns>
                                 <pattern>Licensed to the Apache Software Foundation (ASF) under one</pattern>
                             </patterns>
